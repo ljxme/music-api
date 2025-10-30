@@ -16,6 +16,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+const GlobalAudioManager = {
+    currentPlayer: null,
+    setCurrent(player) {
+        if (this.currentPlayer && this.currentPlayer !== player) {
+            this.currentPlayer.pause();
+        }
+        this.currentPlayer = player;
+    }
+};
 class NeteaseMiniPlayer {
     constructor(element) {
         this.element = element;
@@ -25,6 +34,7 @@ class NeteaseMiniPlayer {
         this.playlist = [];
         this.currentIndex = 0;
         this.audio = new Audio();
+        this.wasPlayingBeforeHidden = false;
         this.isPlaying = false;
         this.currentTime = 0;
         this.duration = 0;
@@ -40,6 +50,7 @@ class NeteaseMiniPlayer {
         const position = element.dataset.position || 'static';
         const validPositions = ['static', 'top-left', 'top-right', 'bottom-left', 'bottom-right'];
         const finalPosition = validPositions.includes(position) ? position : 'static';
+        const defaultMinimized = element.dataset.defaultMinimized === 'true';
         
         const embedValue = element.getAttribute('data-embed') || element.dataset.embed;
         const isEmbed = embedValue === 'true' || embedValue === true;
@@ -53,7 +64,8 @@ class NeteaseMiniPlayer {
             lyric: element.dataset.lyric !== 'false',
             theme: element.dataset.theme || 'auto',
             size: element.dataset.size || 'compact',
-            loop: element.dataset.loop || 'list'
+            loop: element.dataset.loop || 'list',
+            defaultMinimized: defaultMinimized
         };
     }
     async init() {
@@ -90,6 +102,9 @@ class NeteaseMiniPlayer {
                 if (this.config.autoplay && !this.config.embed) {
                     this.play();
                 }
+            }
+            if (this.config.defaultMinimized && !this.config.embed && this.config.position !== 'static') {
+                this.toggleMinimize();
             }
         } catch (error) {
             console.error('播放器初始化失败:', error);
@@ -234,6 +249,17 @@ class NeteaseMiniPlayer {
         });
         if (this.config.position !== 'static' && !this.config.embed) {
             this.setupDragAndDrop();
+        }
+        if (typeof document.hidden !== 'undefined') {
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden && this.isPlaying) {
+                    this.wasPlayingBeforeHidden = true;
+                    this.pause();
+                } else if (!document.hidden && this.wasPlayingBeforeHidden) {
+                    this.play();
+                    this.wasPlayingBeforeHidden = false;
+                }
+            });
         }
     }
     setupAudioEvents() {
@@ -566,6 +592,7 @@ class NeteaseMiniPlayer {
         }
     }
     async play() {
+        GlobalAudioManager.setCurrent(this);
         try {
             await this.audio.play();
             this.isPlaying = true;

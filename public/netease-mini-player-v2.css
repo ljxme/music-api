@@ -278,7 +278,6 @@
     top: 20px;
     left: 20px;
     z-index: 1000;
-    cursor: move;
 }
 
 .netease-mini-player[data-position="top-right"] {
@@ -286,7 +285,6 @@
     top: 20px;
     right: 20px;
     z-index: 1000;
-    cursor: move;
 }
 
 .netease-mini-player[data-position="bottom-left"] {
@@ -294,7 +292,6 @@
     bottom: 20px;
     left: 20px;
     z-index: 1000;
-    cursor: move;
 }
 
 .netease-mini-player[data-position="bottom-right"] {
@@ -302,11 +299,10 @@
     bottom: 20px;
     right: 20px;
     z-index: 1000;
-    cursor: move;
 }
 
 .netease-mini-player[data-position="static"] {
-    position: static;
+    position: relative;
 }
 
 .player-main {
@@ -711,6 +707,10 @@
     display: none !important;
 }
 
+.netease-mini-player[data-position="static"] .minimize-btn {
+    display: none !important;
+}
+
 .netease-mini-player[data-embed="true"] .prev-btn,
 .netease-mini-player[data-embed="true"] .next-btn {
     display: none !important;
@@ -931,5 +931,3 @@
     opacity: 0.8;
     transform: scale(0.95);
     z-index: 9999;
-    transition: none;
-}
